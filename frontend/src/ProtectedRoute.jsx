@@ -3,9 +3,9 @@ import { Navigate } from "react-router-dom"
 
 const ProtectedRoute = ({ children }) => {
   if(!localStorage.getItem("auth-token")){
-    return <Navigate to="/login" />
+    return <Navigate to="/login" replace/>
   }
-  return children  // Return children, not <Outlet/>
+  return children;
 }
 
 export default ProtectedRoute

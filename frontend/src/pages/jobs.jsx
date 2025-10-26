@@ -1,88 +1,15 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { Link } from 'react-router-dom' // Import Link
+import { jobs } from '../data' // Import data from data.js
 
 const Jobs = () => {
-  const jobs = [
-    {
-      id: 1,
-      title: "Waitress/Waiter",
-      location: "Nakuru CBD",
-      salary: "KSh 20,000",
-      bargainable: true,
-      available: true,
-      image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=300&fit=crop",
-      date: "2 days ago"
-    },
-    {
-      id: 2,
-      title: "Mechanic",
-      location: "Lanet, Nakuru",
-      salary: "KSh 35,000",
-      bargainable: true,
-      available: true,
-      image: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop",
-      date: "3 days ago"
-    },
-    {
-      id: 3,
-      title: "House Help",
-      location: "Milimani",
-      salary: "KSh 15,000",
-      bargainable: false,
-      available: false,
-      image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=300&fit=crop",
-      date: "5 days ago"
-    },
-    {
-      id: 4,
-      title: "Delivery Driver",
-      location: "Nakuru Town",
-      salary: "KSh 25,000",
-      bargainable: true,
-      available: true,
-      image: "https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=400&h=300&fit=crop",
-      date: "1 week ago"
-    },
-    {
-      id: 5,
-      title: "Shop Attendant",
-      location: "Pipeline, Nakuru",
-      salary: "KSh 18,000",
-      bargainable: true,
-      available: true,
-      image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=300&fit=crop",
-      date: "1 week ago"
-    },
-    {
-      id: 6,
-      title: "Security Guard",
-      location: "Section 58, Nakuru",
-      salary: "KSh 22,000",
-      bargainable: false,
-      available: true,
-      image: "https://images.unsplash.com/photo-1595433707802-6b2626ef1c91?w=400&h=300&fit=crop",
-      date: "2 weeks ago"
-    },
-    {
-      id: 7,
-      title: "Plumber",
-      location: "Njoro",
-      salary: "KSh 30,000",
-      bargainable: true,
-      available: true,
-      image: "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=400&h=300&fit=crop",
-      date: "2 weeks ago"
-    },
-    {
-      id: 8,
-      title: "Hair Stylist",
-      location: "Nakuru CBD",
-      salary: "KSh 28,000",
-      bargainable: true,
-      available: false,
-      image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop",
-      date: "3 weeks ago"
-    }
-  ]
+  // State to manage how many items are visible
+  const [visibleItems, setVisibleItems] = useState(4);
+
+  // Function to show more items
+  const loadMore = () => {
+    setVisibleItems((prevCount) => prevCount + 4);
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -99,8 +26,13 @@ const Jobs = () => {
       {/* Jobs Grid */}
       <div className="max-w-7xl mx-auto px-4 py-16">
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 max-w-7xl">
-          {jobs.map(job => (
-            <div key={job.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition min-w-[280px]">
+          {jobs.slice(0, visibleItems).map(job => (
+            // Wrap the card in a Link component
+            <Link 
+              to={`/preview?type=job&id=${job.id}`} 
+              key={job.id} 
+              className="block bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition min-w-[280px]"
+            >
               <img src={job.image} alt={job.title} className="w-full h-48 object-cover" />
               <div className="p-4">
                 <div className="flex items-center justify-between mb-2">
@@ -125,15 +57,20 @@ const Jobs = () => {
                   )}
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 
         {/* Load More Button */}
         <div className="text-center">
-          <button className="bg-green-800 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition">
-            Load More Jobs
-          </button>
+          {visibleItems < jobs.length && (
+            <button 
+              onClick={loadMore}
+              className="bg-green-800 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition"
+            >
+              Load More Jobs
+            </button>
+          )}
         </div>
       </div>
     </div>

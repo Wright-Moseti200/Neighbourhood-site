@@ -3,7 +3,8 @@ require("dotenv").config();
 
 let connectDB = async()=>{
     try{
-        await mongoose.connection(`${process.env.MONGO_URL}/neighbourhood`)
+        await mongoose.connect(`${process.env.MONGO_URL}/neighbourhood`);
+        console.log("Database is connected successfuly");
     }
     catch(error){
         console.log(error.message)

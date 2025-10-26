@@ -1,88 +1,15 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { Link } from 'react-router-dom' // Import Link
+import { products } from '../data' // Import data from data.js
 
 const Products = () => {
-  const products = [
-    {
-      id: 1,
-      name: "Fresh Avocados (1kg)",
-      location: "Njoro",
-      price: "KSh 150",
-      bargainable: true,
-      available: true,
-      image: "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=400&h=300&fit=crop",
-      date: "1 day ago"
-    },
-    {
-      id: 2,
-      name: "Handmade Kiondo Basket",
-      location: "Nakuru Town",
-      price: "KSh 800",
-      bargainable: true,
-      available: true,
-      image: "https://images.unsplash.com/photo-1590736969955-71cc94901144?w=400&h=300&fit=crop",
-      date: "3 days ago"
-    },
-    {
-      id: 3,
-      name: "Dairy Milk (5L)",
-      location: "Molo",
-      price: "KSh 300",
-      bargainable: false,
-      available: false,
-      image: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400&h=300&fit=crop",
-      date: "4 days ago"
-    },
-    {
-      id: 4,
-      name: "Wooden Coffee Table",
-      location: "Pipeline, Nakuru",
-      price: "KSh 5,500",
-      bargainable: true,
-      available: true,
-      image: "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?w=400&h=300&fit=crop",
-      date: "6 days ago"
-    },
-    {
-      id: 5,
-      name: "Organic Tomatoes (2kg)",
-      location: "Bahati",
-      price: "KSh 120",
-      bargainable: true,
-      available: true,
-      image: "https://images.unsplash.com/photo-1546094096-0df4bcaaa337?w=400&h=300&fit=crop",
-      date: "1 week ago"
-    },
-    {
-      id: 6,
-      name: "Maasai Beaded Jewelry",
-      location: "Nakuru CBD",
-      price: "KSh 1,200",
-      bargainable: true,
-      available: true,
-      image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400&h=300&fit=crop",
-      date: "1 week ago"
-    },
-    {
-      id: 7,
-      name: "Laptop Backpack",
-      location: "Milimani",
-      price: "KSh 2,000",
-      bargainable: false,
-      available: false,
-      image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=300&fit=crop",
-      date: "2 weeks ago"
-    },
-    {
-      id: 8,
-      name: "Fresh Honey (500ml)",
-      location: "Menengai",
-      price: "KSh 450",
-      bargainable: true,
-      available: true,
-      image: "https://images.unsplash.com/photo-1587049352846-4a222e784838?w=400&h=300&fit=crop",
-      date: "2 weeks ago"
-    }
-  ]
+  // State to manage how many items are visible
+  const [visibleItems, setVisibleItems] = useState(4);
+
+  // Function to show more items
+  const loadMore = () => {
+    setVisibleItems((prevCount) => prevCount + 4);
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -99,8 +26,13 @@ const Products = () => {
       {/* Products Grid */}
       <div className="max-w-7xl mx-auto px-4 py-16">
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 max-w-7xl">
-          {products.map(product => (
-            <div key={product.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition min-w-[280px]">
+          {products.slice(0, visibleItems).map(product => (
+            // Wrap the card in a Link component
+            <Link 
+              to={`/preview?type=product&id=${product.id}`} 
+              key={product.id} 
+              className="block bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition min-w-[280px]"
+            >
               <img src={product.image} alt={product.name} className="w-full h-48 object-cover" />
               <div className="p-4">
                 <div className="flex items-center justify-between mb-2">
@@ -125,15 +57,20 @@ const Products = () => {
                   )}
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 
         {/* Load More Button */}
         <div className="text-center">
-          <button className="bg-green-800 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition">
-            Load More Products
-          </button>
+          {visibleItems < products.length && (
+            <button 
+              onClick={loadMore}
+              className="bg-green-800 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition"
+            >
+              Load More Products
+            </button>
+          )}
         </div>
       </div>
     </div>

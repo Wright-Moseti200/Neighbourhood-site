@@ -4,6 +4,7 @@ require("dotenv").config();
 let PORT = process.env.PORT || 3000;
 let ratelimit = require("express-rate-limit");
 const { connectDB } = require("./database");
+let cors =  require("cors");
 let limit = ratelimit({
     windowMs:10*60*1000,
     max:100

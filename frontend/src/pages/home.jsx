@@ -1,128 +1,15 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom' // Import Link
+import { newsItems, products, jobs } from '../data' // Import data from data.js
+
 const Home = () => {
-  // Sample data for Nakuru/Kenya
-  const newsItems = [
-    {
-      id: 1,
-      title: "Nakuru County Launches Free Wi-Fi in CBD",
-      location: "Nakuru CBD",
-      description: "The county government has installed free public Wi-Fi hotspots across the central business district to boost digital connectivity.",
-      image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&h=300&fit=crop",
-      date: "2 days ago"
-    },
-    {
-      id: 2,
-      title: "Lake Nakuru Water Levels Rising",
-      location: "Lake Nakuru",
-      description: "Conservationists report increased water levels at Lake Nakuru National Park, attracting more flamingos to the area.",
-      image: "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=400&h=300&fit=crop",
-      date: "5 days ago"
-    },
-    {
-      id: 3,
-      title: "New Market Opens in Milimani",
-      location: "Milimani, Nakuru",
-      description: "A modern farmers market has opened its doors, providing fresh produce and local goods to residents.",
-      image: "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=400&h=300&fit=crop",
-      date: "1 week ago"
-    },
-    {
-      id: 4,
-      title: "Nakuru Tech Hub Hosts Startup Weekend",
-      location: "Nakuru Town",
-      description: "Young entrepreneurs gathered for a 3-day intensive program to develop innovative business solutions.",
-      image: "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&h=300&fit=crop",
-      date: "1 week ago"
-    }
-  ]
+   
 
-  const products = [
-    {
-      id: 1,
-      name: "Fresh Avocados (1kg)",
-      location: "Njoro",
-      price: "KSh 150",
-      bargainable: true,
-      available: true,
-      image: "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=400&h=300&fit=crop",
-      date: "1 day ago"
-    },
-    {
-      id: 2,
-      name: "Handmade Kiondo Basket",
-      location: "Nakuru Town",
-      price: "KSh 800",
-      bargainable: true,
-      available: true,
-      image: "https://images.unsplash.com/photo-1590736969955-71cc94901144?w=400&h=300&fit=crop",
-      date: "3 days ago"
-    },
-    {
-      id: 3,
-      name: "Dairy Milk (5L)",
-      location: "Molo",
-      price: "KSh 300",
-      bargainable: false,
-      available: false,
-      image: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400&h=300&fit=crop",
-      date: "4 days ago"
-    },
-    {
-      id: 4,
-      name: "Wooden Coffee Table",
-      location: "Pipeline, Nakuru",
-      price: "KSh 5,500",
-      bargainable: true,
-      available: true,
-      image: "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?w=400&h=300&fit=crop",
-      date: "6 days ago"
-    }
-  ]
+  // We only want to show the first 4 items on the home page
+  const homeNews = newsItems.slice(0, 4);
+  const homeProducts = products.slice(0, 4);
+  const homeJobs = jobs.slice(0, 4);
 
-  const jobs = [
-    {
-      id: 1,
-      title: "Waitress/Waiter",
-      location: "Nakuru CBD",
-      salary: "KSh 20,000",
-      bargainable: true,
-      available: true,
-      image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=300&fit=crop",
-      date: "2 days ago"
-    },
-    {
-      id: 2,
-      title: "Mechanic",
-      location: "Lanet, Nakuru",
-      salary: "KSh 35,000",
-      bargainable: true,
-      available: true,
-      image: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop",
-      date: "3 days ago"
-    },
-    {
-      id: 3,
-      title: "House Help",
-      location: "Milimani",
-      salary: "KSh 15,000",
-      bargainable: false,
-      available: false,
-      image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=300&fit=crop",
-      date: "5 days ago"
-    },
-    {
-      id: 4,
-      title: "Delivery Driver",
-      location: "Nakuru Town",
-      salary: "KSh 25,000",
-      bargainable: true,
-      available: true,
-      image: "https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=400&h=300&fit=crop",
-      date: "1 week ago"
-    }
-  ]
-   const navigate = useNavigate() 
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
@@ -186,8 +73,13 @@ const Home = () => {
         <div className="mb-16">
           <h2 className="text-2xl md:text-3xl font-bold text-green-800 mb-6">Latest News</h2>
           <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
-            {newsItems.map(news => (
-              <div key={news.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition">
+            {homeNews.map(news => (
+              // UPDATED: Card is now a Link
+              <Link 
+                to={`/preview?type=news&id=${news.id}`}
+                key={news.id} 
+                className="block bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition"
+              >
                 <img src={news.image} alt={news.title} className="w-full h-48 object-cover" />
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -202,18 +94,17 @@ const Home = () => {
                   </p>
                   <p className="text-xs text-gray-600 line-clamp-2">{news.description}</p>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
           <div className="text-center">
-            <button 
-            onClick={()=>{
-              navigate("/news");
-              window.scroll(0,0);
-            }}
-             className="bg-green-800 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition">
+            {/* UPDATED: Button is now a Link */}
+            <Link
+              to="/news"
+              className="bg-green-800 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition"
+            >
               Show More News
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -221,8 +112,13 @@ const Home = () => {
         <div className="mb-16">
           <h2 className="text-2xl md:text-3xl font-bold text-green-800 mb-6">Local Products</h2>
           <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
-            {products.map(product => (
-              <div key={product.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition">
+            {homeProducts.map(product => (
+              // UPDATED: Card is now a Link
+              <Link 
+                to={`/preview?type=product&id=${product.id}`}
+                key={product.id} 
+                className="block bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition"
+              >
                 <img src={product.image} alt={product.name} className="w-full h-48 object-cover" />
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -247,18 +143,17 @@ const Home = () => {
                     )}
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
           <div className="text-center">
-            <button
-            onClick={()=>{
-              navigate("/products")
-              window.scroll(0,0);
-            }}
-             className="bg-green-800 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition">
+            {/* UPDATED: Button is now a Link */}
+            <Link
+              to="/products"
+              className="bg-green-800 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition"
+            >
               Show More Products
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -266,8 +161,13 @@ const Home = () => {
         <div className="mb-16">
           <h2 className="text-2xl md:text-3xl font-bold text-green-800 mb-6">Job Opportunities</h2>
           <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
-            {jobs.map(job => (
-              <div key={job.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition">
+            {homeJobs.map(job => (
+              // UPDATED: Card is now a Link
+              <Link 
+                to={`/preview?type=job&id=${job.id}`}
+                key={job.id} 
+                className="block bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition"
+              >
                 <img src={job.image} alt={job.title} className="w-full h-48 object-cover" />
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -292,16 +192,17 @@ const Home = () => {
                     )}
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
           <div className="text-center">
-            <button onClick={()=>{
-              navigate("/jobs")
-              window.scroll(0,0);
-            }} className="bg-green-800 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition">
+            {/* UPDATED: Button is now a Link */}
+            <Link 
+              to="/jobs"
+              className="bg-green-800 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition"
+            >
               Show More Jobs
-            </button>
+            </Link>
           </div>
         </div>
       </div>
