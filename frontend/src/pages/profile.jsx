@@ -24,6 +24,7 @@ const Profile = () => {
     details: '',
     location: '',
     image: '',
+    category: '', // Add this line
     // Product fields
     name: '',
     price: '',
@@ -32,7 +33,7 @@ const Profile = () => {
     sellerPhone: '',
     // Job fields
     salary: '',
-    responsibilities: [''],
+    responsibility: '',  // Replace responsibilities: [''],
   })
 
   // Dummy data - In a real app, these would come from an API/backend
@@ -82,7 +83,7 @@ const Profile = () => {
       available: true,
       sellerPhone: '',
       salary: '',
-      responsibilities: [''],
+      responsibility: '',  // Replace responsibilities: [''],
     })
   }
 
@@ -111,23 +112,7 @@ const Profile = () => {
     }
   }
 
-  const handleResponsibilityChange = (index, value) => {
-    const newResponsibilities = [...formData.responsibilities || ['']]
-    newResponsibilities[index] = value
-    setFormData(prev => ({
-      ...prev,
-      responsibilities: newResponsibilities
-    }))
-  }
-
-  const addResponsibility = () => {
-    setFormData(prev => ({
-      ...prev,
-      responsibilities: [...(prev.responsibilities || ['']), '']
-    }))
-  }
-
-  // Update the handleSubmit function to handle FormData
+  // Update the handleSubmit function to handle the single responsibility
   const handleSubmit = (e) => {
     e.preventDefault()
     
@@ -137,28 +122,22 @@ const Profile = () => {
     Object.keys(formData).forEach(key => {
       if (key === 'image' && formData[key] instanceof File) {
         form.append('image', formData[key])
-      } else if (key === 'responsibilities' && Array.isArray(formData[key])) {
-        form.append('responsibilities', JSON.stringify(formData[key]))
       } else {
         form.append(key, formData[key])
       }
     })
 
-    // Create URL preview for the image
     const imageUrl = formData.image instanceof File ? URL.createObjectURL(formData.image) : formData.image
 
     const newItem = {
       id: Date.now(),
-      // keep original fields for compatibility with display code
       title: formData.title || '',
       name: formData.name || '',
       price: formData.price || '',
       salary: formData.salary || '',
-      // map the new modal fields into the existing display fields
       description: formData.briefDescription || '',
       longDescription: formData.details || '',
-      // keep responsibilities / other fields
-      responsibilities: formData.responsibilities || [],
+      responsibilities: formData.responsibility ? [formData.responsibility] : [],
       bargainable: formData.bargainable || false,
       available: formData.available !== undefined ? formData.available : true,
       sellerPhone: formData.sellerPhone || '',
@@ -166,7 +145,6 @@ const Profile = () => {
       date: new Date().toLocaleDateString(),
     }
 
-    // Update the appropriate section based on modal type
     setUserPosts(prev => ({
       ...prev,
       [modalType]: [newItem, ...prev[modalType]]
@@ -242,16 +220,34 @@ const Profile = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Upload Image</label>
-            <input
-              type="file"
-              name="image"
-              accept="image/*"
+            <label className="block text-sm font-medium text-gray-700">Category</label>
+            <select
+              name="category"
+              value={formData.category || ''}
               onChange={handleChange}
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-              required={!formData.image}
-            />
+              required
+            >
+              <option value="">Select Category</option>
+              {modalType === 'news' && <option value="news">News</option>}
+              {modalType === 'products' && <option value="products">Products</option>}
+              {modalType === 'jobs' && <option value="jobs">Jobs</option>}
+            </select>
           </div>
+
+          {modalType !== 'jobs' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Upload Image</label>
+              <input
+                type="file"
+                name="image"
+                accept="image/*"
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                required={!formData.image}
+              />
+            </div>
+          )}
 
           {/* Replaced Description + Long Description with Brief Description + Details */}
           <div>
@@ -338,26 +334,16 @@ const Profile = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Responsibilities</label>
-                {(formData.responsibilities || [''])?.map((resp, index) => (
-                  <div key={index} className="mt-2">
-                    <input
-                      type="text"
-                      value={resp}
-                      onChange={(e) => handleResponsibilityChange(index, e.target.value)}
-                      className="block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                      placeholder={`Responsibility ${index + 1}`}
-                      required
-                    />
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={addResponsibility}
-                  className="mt-2 text-green-800 text-sm hover:underline"
-                >
-                  + Add Another Responsibility
-                </button>
+                <label className="block text-sm font-medium text-gray-700">Responsibility</label>
+                <textarea
+                  name="responsibility"
+                  value={formData.responsibility || ''}
+                  onChange={handleChange}
+                  rows="3"
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                  placeholder="Enter job responsibility"
+                  required
+                />
               </div>
             </>
           )}
