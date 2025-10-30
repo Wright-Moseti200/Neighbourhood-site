@@ -11,7 +11,7 @@ import About from './pages/about'
 import Preview from './pages/preview'
 import ContextProvider from './context/context'
 import Profile from './pages/profile'
-//import ProtectedRoute from './ProtectedRoute'
+import ProtectedRoute from './ProtectedRoute'
 
 const App = () => {
   return (
@@ -19,7 +19,7 @@ const App = () => {
     <ContextProvider>
     <Routes>
       <Route path="/login" element={<Login/>}/>
-        <Route path="/" element={<Navbar/>}>
+        <Route path="/" element={<ProtectedRoute><Navbar/></ProtectedRoute>}>
           <Route index element={<Home/>}/>
           <Route path="/news" element={<News/>}/>
           <Route path="/jobs" element={<Jobs/>}/>

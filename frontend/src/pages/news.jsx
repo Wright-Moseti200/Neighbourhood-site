@@ -1,72 +1,35 @@
-import React from 'react'
+import React, { useState, useEffect, useContext } from 'react';
+import { Link } from 'react-router-dom';
+import { contextdata } from '../context/context';
 
 const News = () => {
-  const newsItems = [
-    {
-      id: 1,
-      title: "Nakuru County Launches Free Wi-Fi in CBD",
-      location: "Nakuru CBD",
-      description: "The county government has installed free public Wi-Fi hotspots across the central business district to boost digital connectivity.",
-      image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&h=300&fit=crop",
-      date: "2 days ago"
-    },
-    {
-      id: 2,
-      title: "Lake Nakuru Water Levels Rising",
-      location: "Lake Nakuru",
-      description: "Conservationists report increased water levels at Lake Nakuru National Park, attracting more flamingos to the area.",
-      image: "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=400&h=300&fit=crop",
-      date: "5 days ago"
-    },
-    {
-      id: 3,
-      title: "New Market Opens in Milimani",
-      location: "Milimani, Nakuru",
-      description: "A modern farmers market has opened its doors, providing fresh produce and local goods to residents.",
-      image: "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=400&h=300&fit=crop",
-      date: "1 week ago"
-    },
-    {
-      id: 4,
-      title: "Nakuru Tech Hub Hosts Startup Weekend",
-      location: "Nakuru Town",
-      description: "Young entrepreneurs gathered for a 3-day intensive program to develop innovative business solutions.",
-      image: "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&h=300&fit=crop",
-      date: "1 week ago"
-    },
-    {
-      id: 5,
-      title: "Menengai Crater Road Upgrade Complete",
-      location: "Menengai, Nakuru",
-      description: "The newly upgraded road to Menengai Crater is now open, making the tourist destination more accessible to visitors.",
-      image: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop",
-      date: "2 weeks ago"
-    },
-    {
-      id: 6,
-      title: "School Feeding Program Expands",
-      location: "Nakuru County",
-      description: "The county government announces expansion of the school feeding program to cover 50 more schools across the region.",
-      image: "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400&h=300&fit=crop",
-      date: "2 weeks ago"
-    },
-    {
-      id: 7,
-      title: "Nakuru Railway Station Renovation Begins",
-      location: "Nakuru Town",
-      description: "Major renovation works have begun at the historic Nakuru Railway Station to modernize facilities and improve passenger experience.",
-      image: "https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=400&h=300&fit=crop",
-      date: "3 weeks ago"
-    },
-    {
-      id: 8,
-      title: "Youth Sports Tournament Kicks Off",
-      location: "Afraha Stadium",
-      description: "Over 500 young athletes from across Nakuru County participate in the annual inter-school sports competition at Afraha Stadium.",
-      image: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=400&h=300&fit=crop",
-      date: "3 weeks ago"
-    }
-  ]
+  // Get functions and state from the context
+  const { getNews, loading, error } = useContext(contextdata);
+
+  // Local state to store news fetched from the backend
+  const [newsList, setNewsList] = useState([]);
+  
+  // State to manage how many items are visible
+  const [visibleItems, setVisibleItems] = useState(4);
+
+  // Fetch news when the component mounts - ONLY ONCE
+  useEffect(() => {
+    const fetchNews = async () => {
+      const response = await getNews();
+      if (response.success) {
+        setNewsList(response.news);
+      } else {
+        console.error("Failed to fetch news:", response.message);
+      }
+    };
+
+    fetchNews();
+  }, []); // Empty dependency array to run only once on mount
+
+  // Function to show more items
+  const loadMore = () => {
+    setVisibleItems((prevCount) => prevCount + 4);
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -82,36 +45,70 @@ const News = () => {
 
       {/* News Grid */}
       <div className="max-w-7xl mx-auto px-4 py-16">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 max-w-7xl">
-          {newsItems.map(news => (
-            <div key={news.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition min-w-[280px]">
-              <img src={news.image} alt={news.title} className="w-full h-48 object-cover" />
-              <div className="p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-gray-500">{news.date}</span>
-                </div>
-                <h3 className="font-semibold text-green-800 mb-2 text-sm md:text-base">{news.title}</h3>
-                <p className="text-xs text-gray-600 mb-2 flex items-center">
-                  <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                  </svg>
-                  {news.location}
-                </p>
-                <p className="text-xs text-gray-600 line-clamp-2">{news.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* Handle Loading State */}
+        {loading && (
+          <div className="text-center text-lg">Loading news...</div>
+        )}
 
-        {/* Load More Button */}
-        <div className="text-center">
-          <button className="bg-green-800 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition">
-            Load More News
-          </button>
-        </div>
+        {/* Handle Error State (prints error to UI) */}
+        {!loading && error && (
+          <div className="text-center text-lg text-red-600">
+            Error: {error}
+          </div>
+        )}
+
+        {/* Handle No News Found */}
+        {!loading && !error && newsList.length === 0 && (
+          <div className="text-center text-lg text-gray-600">
+            No news found at the moment.
+          </div>
+        )}
+
+        {/* Display News Grid */}
+        {!loading && !error && newsList.length > 0 && (
+          <>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 max-w-7xl">
+              {/* Map over newsList from state */}
+              {newsList.slice(0, visibleItems).map(news => (
+                <Link 
+                  to={`/preview?type=news&id=${news._id}`} 
+                  key={news._id} 
+                  className="block bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition min-w-[280px]"
+                >
+                  <img src={news.image_url} alt={news.title} className="w-full h-48 object-cover" />
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-gray-500"></span>
+                    </div>
+                    <h3 className="font-semibold text-green-800 mb-2 text-sm md:text-base">{news.title}</h3>
+                    <p className="text-xs text-gray-600 mb-2 flex items-center">
+                      <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                      </svg>
+                      {news.location}
+                    </p>
+                    <p className="text-xs text-gray-600 line-clamp-2">{news.description}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {/* Load More Button */}
+            <div className="text-center">
+              {visibleItems < newsList.length && (
+                <button 
+                  onClick={loadMore}
+                  className="bg-green-800 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition"
+                >
+                  Load More News
+                </button>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   )
 }
 
-export default News
+export default News;

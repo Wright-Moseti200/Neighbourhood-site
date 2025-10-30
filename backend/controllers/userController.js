@@ -21,7 +21,9 @@ let login = async(req,res)=>{
                 message:"Password is incorrect"
             });
         }
-        let data = {user:{id:email._id}}
+        let data = {user:
+            {id:
+                email._id}}
         let token  = jwt.sign(data,process.env.JWT_PASS);
         return res.status(200).json({
             success:true,

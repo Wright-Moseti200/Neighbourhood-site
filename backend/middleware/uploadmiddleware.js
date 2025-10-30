@@ -8,11 +8,12 @@ api_key:"357754644141572",
 api_secret:"W8QHODGRKexhcSpUXCfaHD6aVh4"
 });
 
-let storage = CloudinaryStorage({
+let storage = new CloudinaryStorage({
     cloudinary:cloudinary,
     params:{
         folder_name:"Neighbourhood images",
-        allowed_formats:["png","jpeg","jpg","doc","docx","pdf"]
+        allowed_formats:["png","jpeg","jpg","doc","docx","pdf"],
+        resource_type: "auto"
     }
 });
 

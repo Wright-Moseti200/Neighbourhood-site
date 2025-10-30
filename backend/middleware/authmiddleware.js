@@ -10,7 +10,7 @@ if(!token){
     });
 }
 let data = jwt.verify(token,process.env.JWT_PASS);
-req.user = data.id;
+req.user = data.user;
 next();
     }
     catch(error){

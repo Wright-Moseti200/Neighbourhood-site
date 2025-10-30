@@ -1,14 +1,65 @@
-import React from 'react'
-import { Link } from 'react-router-dom' // Import Link
-import { newsItems, products, jobs } from '../data' // Import data from data.js
+import React, { useState, useEffect, useContext } from 'react'
+import { Link } from 'react-router-dom'
+import { contextdata } from '../context/context'
 
 const Home = () => {
-   
+  const { getNews, getProducts, getJobs, loading } = useContext(contextdata)
+  
+  const [newsItems, setNewsItems] = useState([])
+  const [products, setProducts] = useState([])
+  const [jobs, setJobs] = useState([])
+  const [fetchError, setFetchError] = useState(null)
+
+  // Fetch all data on mount
+  useEffect(() => {
+    fetchAllData()
+  }, [])
+
+  const fetchAllData = async () => {
+    try {
+      setFetchError(null)
+
+      // Fetch all data in parallel
+      const [newsResult, productsResult, jobsResult] = await Promise.all([
+        getNews(),
+        getProducts(),
+        getJobs()
+      ])
+
+      // Set news data
+      if (newsResult.success) {
+        setNewsItems(newsResult.news)
+      } else {
+        console.error('Failed to fetch news:', newsResult.message)
+      }
+
+      // Set products data
+      if (productsResult.success) {
+        setProducts(productsResult.products)
+      } else {
+        console.error('Failed to fetch products:', productsResult.message)
+      }
+
+      // Set jobs data
+      if (jobsResult.success) {
+        setJobs(jobsResult.jobs)
+      } else {
+        console.error('Failed to fetch jobs:', jobsResult.message)
+      }
+    } catch (err) {
+      console.error('Error fetching data:', err)
+      setFetchError('Failed to load content. Please try again later.')
+    }
+  }
 
   // We only want to show the first 4 items on the home page
-  const homeNews = newsItems.slice(0, 4);
-  const homeProducts = products.slice(0, 4);
-  const homeJobs = jobs.slice(0, 4);
+  const homeNews = newsItems.slice(0, 4)
+  const homeProducts = products.slice(0, 4)
+  const homeJobs = jobs.slice(0, 4)
+
+  const handleImageError = (e) => {
+    e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23999999'%3E%3Cpath d='M4 4h16v16H4V4z'/%3E%3C/svg%3E"
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -69,142 +120,189 @@ const Home = () => {
           </div>
         </div>
 
-        {/* News Section */}
-        <div className="mb-16">
-          <h2 className="text-2xl md:text-3xl font-bold text-green-800 mb-6">Latest News</h2>
-          <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
-            {homeNews.map(news => (
-              // UPDATED: Card is now a Link
-              <Link 
-                to={`/preview?type=news&id=${news.id}`}
-                key={news.id} 
-                className="block bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition"
-              >
-                <img src={news.image} alt={news.title} className="w-full h-48 object-cover" />
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-gray-500">{news.date}</span>
-                  </div>
-                  <h3 className="font-semibold text-green-800 mb-2 text-sm md:text-base">{news.title}</h3>
-                  <p className="text-xs text-gray-600 mb-2 flex items-center">
-                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                    </svg>
-                    {news.location}
-                  </p>
-                  <p className="text-xs text-gray-600 line-clamp-2">{news.description}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-          <div className="text-center">
-            {/* UPDATED: Button is now a Link */}
-            <Link
-              to="/news"
-              className="bg-green-800 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition"
+        {/* Error Message */}
+        {fetchError && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-8">
+            {fetchError}
+            <button 
+              onClick={fetchAllData}
+              className="ml-4 underline hover:no-underline"
             >
-              Show More News
-            </Link>
+              Try Again
+            </button>
           </div>
-        </div>
+        )}
+
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-800"></div>
+            <p className="text-gray-600 mt-4">Loading content...</p>
+          </div>
+        )}
+
+        {/* News Section */}
+        {!loading && (
+          <div className="mb-16">
+            <h2 className="text-2xl md:text-3xl font-bold text-green-800 mb-6">Latest News</h2>
+            {homeNews.length === 0 ? (
+              <p className="text-gray-600 text-center py-8">No news available at the moment.</p>
+            ) : (
+              <>
+                <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
+                  {homeNews.map(news => (
+                    <Link 
+                      to={`/preview?type=news&id=${news._id}`}
+                      key={news._id} 
+                      className="block bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition"
+                    >
+                      <img 
+                        src={news.image_url} 
+                        alt={news.title} 
+                        className="w-full h-48 object-cover"
+                        onError={handleImageError}
+                      />
+                      <div className="p-4">
+                        <h3 className="font-semibold text-green-800 mb-2 text-sm md:text-base">{news.title}</h3>
+                        <p className="text-xs text-gray-600 mb-2 flex items-center">
+                          <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                          </svg>
+                          {news.location}
+                        </p>
+                        <p className="text-xs text-gray-600 line-clamp-2">{news.description}</p>
+                        <p className="text-xs text-gray-500 mt-2">By: {news.name}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+                {newsItems.length > 4 && (
+                  <div className="text-center">
+                    <Link
+                      to="/news"
+                      className="inline-block bg-green-800 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition"
+                    >
+                      Show More News
+                    </Link>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
 
         {/* Products Section */}
-        <div className="mb-16">
-          <h2 className="text-2xl md:text-3xl font-bold text-green-800 mb-6">Local Products</h2>
-          <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
-            {homeProducts.map(product => (
-              // UPDATED: Card is now a Link
-              <Link 
-                to={`/preview?type=product&id=${product.id}`}
-                key={product.id} 
-                className="block bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition"
-              >
-                <img src={product.image} alt={product.name} className="w-full h-48 object-cover" />
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-gray-500">{product.date}</span>
-                    <span className={`text-xs px-2 py-1 rounded-full ${product.available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                      {product.available ? 'Available' : 'Unavailable'}
-                    </span>
-                  </div>
-                  <h3 className="font-semibold text-green-800 mb-2 text-sm md:text-base">{product.name}</h3>
-                  <p className="text-xs text-gray-600 mb-3 flex items-center">
-                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                    </svg>
-                    {product.location}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-green-800">{product.price}</span>
-                    {product.bargainable && (
-                      <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                        Bargainable
-                      </span>
-                    )}
-                  </div>
+        {!loading && (
+          <div className="mb-16">
+            <h2 className="text-2xl md:text-3xl font-bold text-green-800 mb-6">Local Products</h2>
+            {homeProducts.length === 0 ? (
+              <p className="text-gray-600 text-center py-8">No products available at the moment.</p>
+            ) : (
+              <>
+                <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
+                  {homeProducts.map(product => (
+                    <Link 
+                      to={`/preview?type=product&id=${product._id}`}
+                      key={product._id} 
+                      className="block bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition"
+                    >
+                      <img 
+                        src={product.image_url} 
+                        alt={product.title} 
+                        className="w-full h-48 object-cover"
+                        onError={handleImageError}
+                      />
+                      <div className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            product.status !== "Not available" ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}>
+                            {product.status !== "Not available" ? 'Available' : 'Unavailable'}
+                          </span>
+                        </div>
+                        <h3 className="font-semibold text-green-800 mb-2 text-sm md:text-base">{product.title}</h3>
+                        <p className="text-xs text-gray-600 mb-3 flex items-center">
+                          <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                          </svg>
+                          {product.location}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-green-800">KSh {product.price}</span>
+                        </div>
+                        <p className="text-xs text-gray-600 mt-2">Seller: {product.name}</p>
+                      </div>
+                    </Link>
+                  ))}
                 </div>
-              </Link>
-            ))}
+                {products.length > 4 && (
+                  <div className="text-center">
+                    <Link
+                      to="/products"
+                      className="inline-block bg-green-800 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition"
+                    >
+                      Show More Products
+                    </Link>
+                  </div>
+                )}
+              </>
+            )}
           </div>
-          <div className="text-center">
-            {/* UPDATED: Button is now a Link */}
-            <Link
-              to="/products"
-              className="bg-green-800 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition"
-            >
-              Show More Products
-            </Link>
-          </div>
-        </div>
+        )}
 
         {/* Jobs Section */}
-        <div className="mb-16">
-          <h2 className="text-2xl md:text-3xl font-bold text-green-800 mb-6">Job Opportunities</h2>
-          <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
-            {homeJobs.map(job => (
-              // UPDATED: Card is now a Link
-              <Link 
-                to={`/preview?type=job&id=${job.id}`}
-                key={job.id} 
-                className="block bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition"
-              >
-                <img src={job.image} alt={job.title} className="w-full h-48 object-cover" />
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-gray-500">{job.date}</span>
-                    <span className={`text-xs px-2 py-1 rounded-full ${job.available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                      {job.available ? 'Available' : 'Unavailable'}
-                    </span>
-                  </div>
-                  <h3 className="font-semibold text-green-800 mb-2 text-sm md:text-base">{job.title}</h3>
-                  <p className="text-xs text-gray-600 mb-3 flex items-center">
-                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                    </svg>
-                    {job.location}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-green-800">{job.salary}</span>
-                    {job.bargainable && (
-                      <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                        Bargainable
-                      </span>
-                    )}
-                  </div>
+        {!loading && (
+          <div className="mb-16">
+            <h2 className="text-2xl md:text-3xl font-bold text-green-800 mb-6">Job Opportunities</h2>
+            {homeJobs.length === 0 ? (
+              <p className="text-gray-600 text-center py-8">No job opportunities available at the moment.</p>
+            ) : (
+              <>
+                <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
+                  {homeJobs.map(job => (
+                    <Link 
+                      to={`/preview?type=job&id=${job._id}`}
+                      key={job._id} 
+                      className="block bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition"
+                    >
+                      <div className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            job.status !== "Not available" ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}>
+                            {job.status !== "Not available" ? 'Available' : 'Filled'}
+                          </span>
+                        </div>
+                        <h3 className="font-semibold text-green-800 mb-2 text-sm md:text-base">{job.title}</h3>
+                        <p className="text-xs text-gray-600 mb-3 flex items-center">
+                          <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                          </svg>
+                          {job.location}
+                        </p>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-bold text-green-800">KSh {job.salary}</span>
+                        </div>
+                        <p className="text-xs text-gray-600 line-clamp-2">{job.description}</p>
+                        <p className="text-xs text-gray-500 mt-2">Posted by: {job.name}</p>
+                      </div>
+                    </Link>
+                  ))}
                 </div>
-              </Link>
-            ))}
+                {jobs.length > 4 && (
+                  <div className="text-center">
+                    <Link 
+                      to="/jobs"
+                      className="inline-block bg-green-800 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition"
+                    >
+                      Show More Jobs
+                    </Link>
+                  </div>
+                )}
+              </>
+            )}
           </div>
-          <div className="text-center">
-            {/* UPDATED: Button is now a Link */}
-            <Link 
-              to="/jobs"
-              className="bg-green-800 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition"
-            >
-              Show More Jobs
-            </Link>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   )
