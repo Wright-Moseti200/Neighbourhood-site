@@ -100,6 +100,7 @@ const ContextProvider = ({ children }) => {
     setToken(null);
     setUser(null);
     localStorage.removeItem('auth-token');
+    window.location.reload();
   };
 
   // Get user credentials
