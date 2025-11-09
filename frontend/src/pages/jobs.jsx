@@ -3,34 +3,31 @@ import { Link } from 'react-router-dom';
 import { contextdata } from '../context/context';
 
 const Jobs = () => {
-  // Get functions and state from the context
-  const { getJobs, loading, error } = useContext(contextdata);
+  const { getJobs, loading, error, user } = useContext(contextdata);
 
-  // Local state to store jobs fetched from the backend
   const [jobsList, setJobsList] = useState([]);
-  
-  // State to manage how many items are visible
   const [visibleItems, setVisibleItems] = useState(4);
 
-  // Fetch jobs when the component mounts - ONLY ONCE
   useEffect(() => {
     const fetchJobs = async () => {
       const response = await getJobs();
       if (response.success) {
-        setJobsList(response.jobs);
+        // Filter jobs by user's county
+        const userCounty = user?.county;
+        const filteredJobs = userCounty 
+          ? response.jobs.filter(job => job.location === userCounty)
+          : response.jobs;
+        setJobsList(filteredJobs);
       }
-      // Errors are already handled by the 'error' state from context
     };
 
     fetchJobs();
-  }, []); // Empty dependency array to run only once on mount
+  }, [user]); // Added user to dependency array
 
-  // Function to show more items
   const loadMore = () => {
     setVisibleItems((prevCount) => prevCount + 4);
   };
 
-  // Helper function to format salary if it's a number
   const formatSalary = (salary) => {
     if (typeof salary === 'number') {
       return `Ksh ${salary.toLocaleString()}`;
@@ -40,38 +37,43 @@ const Jobs = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Section */}
       <div className="bg-green-800 text-white py-16 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Job Opportunities</h1>
           <p className="text-lg md:text-xl opacity-90">
-            Find local employment opportunities in your neighborhood
+            {user?.county 
+              ? `Find local employment opportunities in ${user.county}`
+              : 'Find local employment opportunities in your neighborhood'
+            }
           </p>
+          {user?.county && (
+            <div className="mt-4 inline-block bg-green-700 px-4 py-2 rounded-full text-sm">
+              Showing jobs in: <strong>{user.county}</strong>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Jobs Grid */}
       <div className="max-w-7xl mx-auto px-4 py-16">
-        {/* Handle Loading State */}
         {loading && (
           <div className="text-center text-lg">Loading jobs...</div>
         )}
 
-        {/* Handle Error State */}
         {!loading && error && (
           <div className="text-center text-lg text-red-600">
             Error: {error}
           </div>
         )}
 
-        {/* Handle No Jobs Found */}
         {!loading && !error && jobsList.length === 0 && (
           <div className="text-center text-lg text-gray-600">
-            No job opportunities found at the moment.
+            {user?.county 
+              ? `No job opportunities found in ${user.county} at the moment.`
+              : 'No job opportunities found at the moment.'
+            }
           </div>
         )}
 
-        {/* Display Jobs Grid */}
         {!loading && !error && jobsList.length > 0 && (
           <>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 max-w-7xl">
@@ -108,7 +110,6 @@ const Jobs = () => {
               ))}
             </div>
 
-            {/* Load More Button */}
             <div className="text-center">
               {visibleItems < jobsList.length && (
                 <button 

@@ -3,72 +3,75 @@ import { Link } from 'react-router-dom';
 import { contextdata } from '../context/context';
 
 const News = () => {
-  // Get functions and state from the context
-  const { getNews, loading, error } = useContext(contextdata);
+  const { getNews, loading, error, user } = useContext(contextdata);
 
-  // Local state to store news fetched from the backend
   const [newsList, setNewsList] = useState([]);
-  
-  // State to manage how many items are visible
   const [visibleItems, setVisibleItems] = useState(4);
 
-  // Fetch news when the component mounts - ONLY ONCE
   useEffect(() => {
     const fetchNews = async () => {
       const response = await getNews();
       if (response.success) {
-        setNewsList(response.news);
+        // Filter news by user's county
+        const userCounty = user?.county;
+        const filteredNews = userCounty 
+          ? response.news.filter(news => news.location === userCounty)
+          : response.news;
+        setNewsList(filteredNews);
       } else {
         console.error("Failed to fetch news:", response.message);
       }
     };
 
     fetchNews();
-  }, []); // Empty dependency array to run only once on mount
+  }, [user]); // Added user to dependency array
 
-  // Function to show more items
   const loadMore = () => {
     setVisibleItems((prevCount) => prevCount + 4);
   };
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Section */}
       <div className="bg-green-800 text-white py-16 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Local News</h1>
           <p className="text-lg md:text-xl opacity-90">
-            Stay updated with the latest happenings in your neighborhood
+            {user?.county 
+              ? `Stay updated with the latest happenings in ${user.county}`
+              : 'Stay updated with the latest happenings in your neighborhood'
+            }
           </p>
+          {user?.county && (
+            <div className="mt-4 inline-block bg-green-700 px-4 py-2 rounded-full text-sm">
+              Showing news in: <strong>{user.county}</strong>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* News Grid */}
       <div className="max-w-7xl mx-auto px-4 py-16">
-        {/* Handle Loading State */}
         {loading && (
           <div className="text-center text-lg">Loading news...</div>
         )}
 
-        {/* Handle Error State (prints error to UI) */}
         {!loading && error && (
           <div className="text-center text-lg text-red-600">
             Error: {error}
           </div>
         )}
 
-        {/* Handle No News Found */}
         {!loading && !error && newsList.length === 0 && (
           <div className="text-center text-lg text-gray-600">
-            No news found at the moment.
+            {user?.county 
+              ? `No news found in ${user.county} at the moment.`
+              : 'No news found at the moment.'
+            }
           </div>
         )}
 
-        {/* Display News Grid */}
         {!loading && !error && newsList.length > 0 && (
           <>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 max-w-7xl">
-              {/* Map over newsList from state */}
               {newsList.slice(0, visibleItems).map(news => (
                 <Link 
                   to={`/preview?type=news&id=${news._id}`} 
@@ -93,7 +96,6 @@ const News = () => {
               ))}
             </div>
 
-            {/* Load More Button */}
             <div className="text-center">
               {visibleItems < newsList.length && (
                 <button 

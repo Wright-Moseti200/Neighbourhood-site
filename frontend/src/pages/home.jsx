@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { contextdata } from '../context/context'
 
 const Home = () => {
-  const { getNews, getProducts, getJobs, loading } = useContext(contextdata)
+  const { getNews, getProducts, getJobs, loading, user } = useContext(contextdata)
   
   const [newsItems, setNewsItems] = useState([])
   const [products, setProducts] = useState([])
@@ -26,23 +26,35 @@ const Home = () => {
         getJobs()
       ])
 
-      // Set news data
+      // Filter data based on user's county
+      const userCounty = user?.county;
+
+      // Set news data - filter by county if user has county
       if (newsResult.success) {
-        setNewsItems(newsResult.news)
+        const filteredNews = userCounty 
+          ? newsResult.news.filter(news => news.location === userCounty)
+          : newsResult.news;
+        setNewsItems(filteredNews);
       } else {
         console.error('Failed to fetch news:', newsResult.message)
       }
 
-      // Set products data
+      // Set products data - filter by county if user has county
       if (productsResult.success) {
-        setProducts(productsResult.products)
+        const filteredProducts = userCounty 
+          ? productsResult.products.filter(product => product.location === userCounty)
+          : productsResult.products;
+        setProducts(filteredProducts);
       } else {
         console.error('Failed to fetch products:', productsResult.message)
       }
 
-      // Set jobs data
+      // Set jobs data - filter by county if user has county
       if (jobsResult.success) {
-        setJobs(jobsResult.jobs)
+        const filteredJobs = userCounty 
+          ? jobsResult.jobs.filter(job => job.location === userCounty)
+          : jobsResult.jobs;
+        setJobs(filteredJobs);
       } else {
         console.error('Failed to fetch jobs:', jobsResult.message)
       }
@@ -68,17 +80,26 @@ const Home = () => {
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">Welcome to the Neighborhood KE</h1>
           <p className="text-lg md:text-xl mb-8 opacity-90">
-            Connect with your neighbors, stay informed about local news, discover local businesses, and find opportunities in your community.
+            {user?.county 
+              ? `Connect with your neighbors in ${user.county}, stay informed about local news, discover local businesses, and find opportunities in your community.`
+              : 'Connect with your neighbors, stay informed about local news, discover local businesses, and find opportunities in your community.'
+            }
           </p>
+          {user?.county && (
+            <div className="inline-block bg-green-700 px-4 py-2 rounded-full text-sm">
+              Showing content for: <strong>{user.county}</strong>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Features Section */}
+      {/* Rest of your Home component remains the same */}
       <div className="max-w-6xl mx-auto px-4 py-16">
         <h2 className="text-2xl md:text-3xl font-bold text-green-800 text-center mb-12">
           Everything Your Neighborhood Needs
         </h2>
         
+        {/* Features Section - Same as before */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {/* Feature 1 */}
           <div className="text-center p-6">
@@ -144,9 +165,21 @@ const Home = () => {
         {/* News Section */}
         {!loading && (
           <div className="mb-16">
-            <h2 className="text-2xl md:text-3xl font-bold text-green-800 mb-6">Latest News</h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl md:text-3xl font-bold text-green-800">Latest News</h2>
+              {user?.county && (
+                <span className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+                  {user.county}
+                </span>
+              )}
+            </div>
             {homeNews.length === 0 ? (
-              <p className="text-gray-600 text-center py-8">No news available at the moment.</p>
+              <p className="text-gray-600 text-center py-8">
+                {user?.county 
+                  ? `No news available in ${user.county} at the moment.`
+                  : 'No news available at the moment.'
+                }
+              </p>
             ) : (
               <>
                 <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
@@ -194,9 +227,21 @@ const Home = () => {
         {/* Products Section */}
         {!loading && (
           <div className="mb-16">
-            <h2 className="text-2xl md:text-3xl font-bold text-green-800 mb-6">Local Products</h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl md:text-3xl font-bold text-green-800">Local Products</h2>
+              {user?.county && (
+                <span className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+                  {user.county}
+                </span>
+              )}
+            </div>
             {homeProducts.length === 0 ? (
-              <p className="text-gray-600 text-center py-8">No products available at the moment.</p>
+              <p className="text-gray-600 text-center py-8">
+                {user?.county 
+                  ? `No products available in ${user.county} at the moment.`
+                  : 'No products available at the moment.'
+                }
+              </p>
             ) : (
               <>
                 <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
@@ -253,9 +298,21 @@ const Home = () => {
         {/* Jobs Section */}
         {!loading && (
           <div className="mb-16">
-            <h2 className="text-2xl md:text-3xl font-bold text-green-800 mb-6">Job Opportunities</h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl md:text-3xl font-bold text-green-800">Job Opportunities</h2>
+              {user?.county && (
+                <span className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+                  {user.county}
+                </span>
+              )}
+            </div>
             {homeJobs.length === 0 ? (
-              <p className="text-gray-600 text-center py-8">No job opportunities available at the moment.</p>
+              <p className="text-gray-600 text-center py-8">
+                {user?.county 
+                  ? `No job opportunities available in ${user.county} at the moment.`
+                  : 'No job opportunities available at the moment.'
+                }
+              </p>
             ) : (
               <>
                 <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">

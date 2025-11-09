@@ -3,35 +3,33 @@ import { Link } from 'react-router-dom';
 import { contextdata } from '../context/context';
 
 const Products = () => {
-  // Get functions and state from the context
-  const { getProducts, loading, error } = useContext(contextdata);
+  const { getProducts, loading, error, user } = useContext(contextdata);
 
-  // Local state to store products fetched from the backend
   const [productsList, setProductsList] = useState([]);
-  
-  // State to manage how many items are visible
   const [visibleItems, setVisibleItems] = useState(4);
 
-  // Fetch products when the component mounts - ONLY ONCE
   useEffect(() => {
     const fetchProducts = async () => {
       const response = await getProducts();
       if (response.success) {
-        setProductsList(response.products);
+        // Filter products by user's county
+        const userCounty = user?.county;
+        const filteredProducts = userCounty 
+          ? response.products.filter(product => product.location === userCounty)
+          : response.products;
+        setProductsList(filteredProducts);
       } else {
         console.error("Failed to fetch products:", response.message);
       }
     };
 
     fetchProducts();
-  }, []); // Empty dependency array to run only once on mount
+  }, [user]); // Added user to dependency array
 
-  // Function to show more items
   const loadMore = () => {
     setVisibleItems((prevCount) => prevCount + 4);
   };
 
-  // Helper function to format price
   const formatPrice = (price) => {
     if (typeof price === 'number') {
       return `Ksh ${price.toLocaleString()}`;
@@ -41,38 +39,43 @@ const Products = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Section */}
       <div className="bg-green-800 text-white py-16 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Local Products</h1>
           <p className="text-lg md:text-xl opacity-90">
-            Discover quality products from businesses in your neighborhood
+            {user?.county 
+              ? `Discover quality products from businesses in ${user.county}`
+              : 'Discover quality products from businesses in your neighborhood'
+            }
           </p>
+          {user?.county && (
+            <div className="mt-4 inline-block bg-green-700 px-4 py-2 rounded-full text-sm">
+              Showing products in: <strong>{user.county}</strong>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Products Grid */}
       <div className="max-w-7xl mx-auto px-4 py-16">
-        {/* Handle Loading State */}
         {loading && (
           <div className="text-center text-lg">Loading products...</div>
         )}
 
-        {/* Handle Error State (prints error to UI) */}
         {!loading && error && (
           <div className="text-center text-lg text-red-600">
             Error: {error}
           </div>
         )}
 
-        {/* Handle No Products Found */}
         {!loading && !error && productsList.length === 0 && (
           <div className="text-center text-lg text-gray-600">
-            No products found at the moment.
+            {user?.county 
+              ? `No products found in ${user.county} at the moment.`
+              : 'No products found at the moment.'
+            }
           </div>
         )}
 
-        {/* Display Products Grid */}
         {!loading && !error && productsList.length > 0 && (
           <>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 max-w-7xl">
@@ -102,7 +105,6 @@ const Products = () => {
               ))}
             </div>
 
-            {/* Load More Button */}
             <div className="text-center">
               {visibleItems < productsList.length && (
                 <button 
