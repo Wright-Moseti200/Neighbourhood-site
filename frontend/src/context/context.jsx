@@ -9,7 +9,7 @@ const ContextProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const BASE_URL = 'http://localhost:4000/api/user';
+  const BASE_URL = 'https://neighbourhood-site-4e8z.onrender.com/api/user';
 
   // Helper function to get headers with token
   const getHeaders = (includeAuth = false) => {
